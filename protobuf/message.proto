@@ -115,9 +115,66 @@ message ScheduleConfigPacket {
   repeated ScheduledConfig schedules = 1;
 }
 
+/* ---------- System state + sensors ---------- */
+
+enum Activity {
+  STILL = 0;
+  WALK = 1;
+  RUN = 2;
+}
+
+message SimpleSensorReading{
+    uint32 index = 1;
+    uint32 epoch = 2;
+    float temperature = 3;
+    float humidity = 4;
+    float pressure = 5;
+    float gas = 6;
+    float pm2_5 = 7;
+    uint32 light = 8;
+    Activity activity = 9;
+    uint32 steps = 10;
+
+    bool particulate_static_obstructed = 11;
+    bool particulate_dynamic_obstructed = 12;
+    bool particulate_outside_detection_limits = 13;
+}
+
+message BatteryState {
+  bool  charging   = 1;
+  float voltage    = 2;
+  optional float percentage = 3;
+}
+
+message SDCardState {
+  bool   detected            = 1;
+  uint64 space_remaining     = 2; // bytes
+  uint64 total_space         = 3; // bytes
+}
+
+message GPSData{
+  float latitude = 1;
+  float longitude = 2;
+  float altitude = 3;
+  float speed = 4;
+  float heading = 5;
+}
+
+message SystemStatePacket {
+  bool         engage_state                 = 1;     // engaged/disengaged
+  BatteryState battery_state                = 2;
+  SDCardState  sdcard_state                 = 3;
+  optional GPSData      gps_data            = 4;
+  SimpleSensorReading simple_sensor_reading = 5;
+}
+
 // ================== WRAPPER ==================
 
 message Packet {
     PacketHeader header = 1;
-    ScheduleConfigPacket schedule_config_packet = 2;
+    
+    oneof payload {
+      ScheduleConfigPacket schedule_config_packet = 2;
+      SystemStatePacket    system_state_packet    = 3;
+    }
 }
